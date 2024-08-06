@@ -1,0 +1,150 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Form Edit Users</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Form Edit Users</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <form action="/update-user/{{data.id_user}}" class="form-horizontal" method="POST">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nama">Nama Lengkap</label>
+                                    <input type="text" id="nama" name="nama" class="form-control" value="{{data.nama}}" placeholder="Nama Lengkap" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" name="email" class="form-control" value="{{data.email}}" placeholder="Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status">Status</label>
+                                    <select name="status" class="form-control" required>
+                                        <option value="{{data.status}}">{{data.status}}</option>
+                                        {% if data.status == 'Aktif' %}
+                                        <option value="Tidak Aktif">Tidak Aktif</option>
+                                        {% else %}
+                                        <option value="Aktif">Aktif</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="level-select">Level</label>
+                                    <select name="level" id="level-select" class="form-control" required>
+                                        <option value="{{data.level}}">{{data.level}}</option>
+                                        {% if data.level == 'Admin' %}
+                                        <option value="Siswa">Siswa</option>
+                                        <option value="Guru">Guru</option>
+                                        {% elif data.level == 'Guru' %}
+                                        <option value="Siswa">Siswa</option>
+                                        <option value="Admin">Admin</option>
+                                        {% else %}
+                                        <option value="Guru">Guru</option>
+                                        <option value="Admin">Admin</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group" id="mata-pelajaran-form" style="display: none;">
+                                    <label for="mata-pelajaran">Mata Pelajaran</label>
+                                    <select id="mata-pelajaran" name="id_mapel" class="form-control">
+                                        <option value="{{data.id_mapel}}">{{data.mapel}}</option>
+                                        {% for mapel in mapel %}
+                                        <option value="{{mapel.id_mapel}}">{{mapel.mapel}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group" id="jurusan-form" style="display: none;">
+                                    <label for="jurusan-select">Jurusan</label>
+                                    <select name="id_jurusan" id="jurusan-select" class="form-control">
+                                        <option value="{{data.id_jurusan}}">{{data.jurusan}}</option>
+                                        {% for jurusan in jurusan %}
+                                        <option value="{{jurusan.id_jurusan}}">{{jurusan.jurusan}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group" id="kelas-form" style="display: none;">
+                                    <label for="kelas">Kelas</label>
+                                    <select id="kelas" name="id_kelas" class="form-control">
+                                        <option value="{{data.kelas}}">{{data.kelas}}</option>
+                                        {% for kelas in kelas %}
+                                        <option value="{{kelas.id_kelas}}">{{kelas.kelas}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" name="password" class="form-control" placeholder="Password">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const levelSelect = document.getElementById("level-select");
+    const jurusanSelect = document.getElementById("jurusan-select");
+    const mataPelajaranForm = document.getElementById("mata-pelajaran-form");
+    const kelasForm = document.getElementById("kelas-form");
+    const jurusanForm = document.getElementById("jurusan-form");
+
+    levelSelect.addEventListener("change", function() {
+        if (levelSelect.value === "Guru") {
+            mataPelajaranForm.style.display = "block";
+            kelasForm.style.display = "none";
+            jurusanForm.style.display = "none";
+        } else if (levelSelect.value === "Siswa") {
+            mataPelajaranForm.style.display = "none";
+            jurusanForm.style.display = "block";
+            kelasForm.style.display = "block";
+        } else {
+            mataPelajaranForm.style.display = "none";
+            kelasForm.style.display = "none";
+            jurusanForm.style.display = "none";
+        }
+    });
+
+    // Periksa nilai level saat halaman dimuat
+    if (levelSelect.value === "Guru") {
+        mataPelajaranForm.style.display = "block";
+        kelasForm.style.display = "none";
+        jurusanForm.style.display = "none";
+    } else if (levelSelect.value === "Siswa") {
+        mataPelajaranForm.style.display = "none";
+        jurusanForm.style.display = "block";
+        kelasForm.style.display = "block";
+    } else {
+        mataPelajaranForm.style.display = "none";
+        kelasForm.style.display = "none";
+        jurusanForm.style.display = "none";
+    }
+</script>
+
+
+
+{% endblock %}

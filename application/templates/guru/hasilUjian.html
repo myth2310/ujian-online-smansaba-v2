@@ -1,0 +1,75 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Hasil Ujian</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Hasil Ujian</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="zero_config" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Mata Pelajaran</th>
+                                <th>Kelas</th>
+                                <th>Judul</th>
+                                <th>Waktu</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kategori in kategori %}
+                            <tr>
+                                <td style="text-transform: uppercase;">{{kategori.mapel}}</td>
+                                <td>{{kategori.kelas}}</td>
+                                <td>{{kategori.kategori}}</td>
+                                <td>
+                                    {{ kategori.tanggal}} <br>
+                                    {{ kategori.time_start }} - {{ kategori.time_done }}
+                                </td>                    
+                                <td>
+                                    <a href="/daftar-nilai-siswa/{{kategori.id_kategori}}/{{ kategori.kelas | replace(' ', '-') }}" class="btn btn-sm btn-primary">
+                                        <i class="fa-solid fa-list" style="margin-right: 10px;"></i>Detail Lengkap
+                                    </a>
+                                </td>
+                            </tr>
+    
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    jQuery('.mydatepicker').datepicker();
+    jQuery('#datepicker-autoclose').datepicker({
+        autoclose: true,
+        todayHighlight: true
+    });
+    var quill = new Quill('#editor', {
+        theme: 'snow'
+    });
+
+</script>
+
+{% endblock %}

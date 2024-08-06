@@ -1,0 +1,71 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <h3>Edit Data Diri</h3>
+            <form action="/edit-profil/{{data.id_user}}" method="post">
+                <div class="row pt-3">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="hue-demo">Nama Lengkap</label>
+                            <input type="text" value="{{data.nama}}" class="form-control demo" data-control="hue" readonly>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="hue-demo">Email</label>
+                            <input type="text" value="{{data.email}}" class="form-control demo" data-control="hue" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="hue-demo">Jurusan</label>
+                            <input type="text" value="{{data.jurusan}}" class="form-control demo" data-control="hue" readonly>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="hue-demo">Kelas</label>
+                            <input type="text" value="{{data.kelas}}" class="form-control demo" data-control="hue" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="pt-2">Informasi Orang Tua</h5>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="hue-demo">Nama</label>
+                        {% if data.nama_ortu == None %}
+                            <input type="text" name="nama_ortu" class="form-control demo" data-control="hue"
+                                placeholder="Nama Orang Tua" required>
+                        {% else %}
+                            <input type="text" name="nama_ortu" class="form-control demo" data-control="hue"
+                            placeholder="Nama Orang Tua" value="{{data.nama_ortu}}" required>
+                        {% endif%}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="hue-demo">No Whatsapp</label>
+                        {% if data.nama_ortu == None %}
+                        <input type="email"  name="email_ortu" class="form-control demo" data-control="hue"
+                            placeholder="Email Orang Tua" required>
+                        <p class="pt-2"><span class="badge-danger">Wajib Menggunakan Email Orang Tua</span></p>
+                        {% else %}
+                        <input type="email" name="no_ortu" value="{{data.email_ortu}}"  class="form-control demo" data-control="hue"
+                        placeholder="Email Orang Tua" required>
+                        {% endif %}
+                    </div>
+                </div>
+              <button class="btn-lg btn-success text-white">Edit</button>  
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

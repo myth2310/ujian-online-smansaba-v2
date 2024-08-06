@@ -1,0 +1,92 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Data Soal Ujian</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Data Soal Ujian</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+   <div class="row">
+    <div class="card">
+        <div class="card-body">   
+        <a href="{{url_for('formSoal')}}" class="btn btn-success text-white mb-4"><i class="fa-solid fa-plus" style="margin-right: 10px;"></i>Tambah Soal</a>
+
+            <div class="table-responsive">
+                <table id="zero_config" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Jenis Ujian</th>
+                            <th>Soal</th>
+                            <th>Kunci Jawaban</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in soal %}
+                        <tr>
+                            <td>{{loop.index}}</td>
+                            <td>{{item.kategori}} | {{item.tanggal}}</td>
+                            <td>
+                                {{item.pertanyaan|safe}}
+                                <li>A.&nbsp;{{item.jawaban_a}}</li>
+                                <li>B.&nbsp;{{item.jawaban_b}}</li>
+                                <li>C.&nbsp;{{item.jawaban_c}}</li>
+                                <li>C.&nbsp;{{item.jawaban_d}}</li>  
+                            </td>
+                            <td><span class="font-bold">{{item.correct}}</span></td>
+                            <td>
+                                <a href="/view-soal/{{item.id_soal}}" class="btn btn-primary btn-sm"><i
+                                    class="fa-solid fa-pen-to-square"></i></a>
+                                <button type="button" class="btn btn-danger btn-sm delete"
+                                data-id="{{item.id_soal}}"><i class="fa-solid fa-trash"
+                                    style="color: #f7f7f7;"></i></button>       
+                            </td>             
+                        </tr>
+                        {% endfor %}
+                    </tbody>           
+                </table>
+            </div>
+        </div>
+    </div>
+   </div>
+</div>
+
+
+<script>
+    $('.delete').click(function () {
+        var dataid = $(this).attr('data-id');
+        swal({
+            title: "Hapus Data"
+            , text: "Apa yakin ingin menghapus soal ini ?"
+            , icon: "warning"
+            , buttons: true
+            , dangerMode: true
+            ,
+        })
+            .then((willUpprove) => {
+                if (willUpprove) {
+                    window.location = "/delete-soal/" + dataid + ""
+                } else {
+                    swal("Hapus dibatalkan");
+                }
+            });
+    });
+
+</script>
+
+{% endblock %}

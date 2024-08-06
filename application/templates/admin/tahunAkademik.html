@@ -1,0 +1,191 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+    <script>
+    var title = "";
+    var icon = "";
+    if ("{{ category }}" === "error") {
+        title = "Kesalahan";
+        icon = "error";
+    } else {
+        title = "Berhasil";
+        icon = "success";
+    }
+    swal(title, "{{ message }}", icon);
+    </script>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Data Tahun Akademik</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Data Tahun Akademik</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal"
+                data-bs-target="#MapelModal">Tambah Tahun Akademik</button>
+            <div class="table-responsive">
+                <table id="zero_config" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Tahun Akademik</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data %}
+                        <tr>
+                            <td>{{data.tahun_akademik}} {{data.semester}}</td>
+                            <td>
+                                {% if data.status == 'Aktif' %}
+                                <span class="badge text-bg-success">Aktif</span>
+                                {% else %}
+                                <span class="badge text-bg-warning">Tidak Aktif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#UpdateAkademikModal{{data.akademik_id}}"><i
+                                        class="fa-solid fa-pen-to-square"></i></button>
+                                <button type="button" class="btn btn-danger btn-sm delete"
+                                    data-id="{{data.akademik_id}}" data-nama="{{data.tahun_akademik}}" data-semester="{{data.semester}}"><i
+                                        class="fa-solid fa-trash" style="color: #f7f7f7;"></i></button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="UpdateAkademikModal{{data.akademik_id}}" tabindex="-1"
+                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Update Tahun Akademik</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/update-tahun-akademik/{{data.akademik_id}}" method="post">
+                                            <div class="form-group">
+                                                <label for="hue-demo">Tahun Akademik</label>
+                                                <input type="text" name="tahun_akademik" class="form-control demo"
+                                                    placeholder="Tahun Akademik" value="{{data.tahun_akademik}}"
+                                                    required>
+                                                <span class="badge text-dark">Contoh : 2019/2020</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="status">Semester</label>
+                                                <select class="form-control" id="semester" name="semester" required>
+                                                    <option value="Ganjil" {% if data.semester == 'Ganjil' %}selected{% endif %}>Ganjil</option>
+                                                    <option value="Genap" {% if data.semester == 'Genap' %}selected{% endif %}>Genap</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="status">Status</label>
+                                                <select class="form-control" id="status" name="status" required>
+                                                    <option value="Aktif" {% if data.status == 'Aktif' %}selected{% endif %}>Aktif</option>
+                                                    <option value="Tidak Aktif" {% if data.status == 'Tidak Aktif' %}selected{% endif %}>Tidak Aktif</option>
+                                                </select>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Simpan</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="MapelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Tahun Akademik</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/insert-tahun-akademik" method="post">
+                    <div class="form-group">
+                        <label for="hue-demo">Tahun Akademik</label>
+                        <input type="text" name="tahun_akademik" class="form-control demo" placeholder="Tahun Akademik"
+                         required>
+                        <span class="badge text-dark">Contoh : 2019/2020</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="hue-demo">Semester</label>
+                        <select class="form-select" id="validationCustom04" name="semester" required>
+                            <option selected disabled value="">--- Pilih Semester --</option>
+                            <option value="Ganjil">Ganjil</option>
+                            <option value="Genap">Genap</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="hue-demo">Status</label>
+                        <select class="form-select" id="validationCustom04" name="status" required>
+                            <option selected disabled value="">--- Pilih Status ---</option>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Tidak Aktif">Tidak Aktif</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('.delete').click(function () {
+        var dataid = $(this).attr('data-id');
+        var nama = $(this).attr('data-nama');
+        var semester = $(this).attr('data-semester');
+        swal({
+            title: "Hapus Data Akademik ?"
+            , text: "Menghapus tahun akademik " + nama + " " + semester +  " "
+            , icon: "warning"
+            , buttons: true
+            , dangerMode: true
+            ,
+        })
+            .then((willUpprove) => {
+                if (willUpprove) {
+                    window.location = "/delete-tahun-akademik/" + dataid + ""
+                } else {
+                    swal("Hapus dibatalkan");
+                }
+            });
+    });
+</script>
+
+
+{% endblock %}

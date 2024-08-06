@@ -1,0 +1,106 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Daftar Ujian</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Daftar Ujian</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="zero_config" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Jenis Ujian</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Tanggal</th>
+                            <th>Jam</th>
+                            <th>Durasi</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ujian in ujian%}
+                        <tr>
+                            <td>{{loop.index}}</td>
+                            <td>{{ujian.kategori}}</td>
+                            <td>{{ujian.mapel}}</td>
+                            <td>{{ujian.tanggal}}</td>
+                            <td>{{ujian.time_start}} - {{ujian.time_done}}</td>
+                            <td><span class="font-bold">{{ujian.duration}} Menit</span></td>
+                            <td>
+                                
+                                {% if ujian.id_kategori in ujianSelesai or formatted_datetime > ujian.time_done or formatted_date > ujian.tanggal  %}
+                                <button type="button" class="btn btn-success text-white" disabled>Ujian Selesai</button>
+                                {% else %}
+                                <!-- <button type="button" data-id="{{ ujian.id_kategori }}" data-date="{{ujian.tanggal}}" date-time="{{ujian.time_start}}"
+                                    class="btn btn-danger text-white mb-4 start">Mulai Ujian</button> -->
+                                <button type="button" data-id="{{ encrypt_id(ujian.id_kategori) }}" data-date="{{ujian.tanggal}}" date-time="{{ujian.time_start}}"
+                                    class="btn btn-danger text-white mb-4 start">Mulai Ujian</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('.start').click(function () {
+        var waktu = new Date();
+        var waktuSekarang = waktu.toISOString().split('T')[0];
+   
+        var datadate = $(this).attr('data-date');
+        var waktuUjian = new Date(datadate).toISOString().split('T')[0]; 
+
+        var jamSekarang = new Date();
+        var jamMulai = new Date();
+        var waktuUjianString = $(this).attr('date-time');
+        var waktuUjianParts = waktuUjianString.split(':');
+        jamMulai.setHours(parseInt(waktuUjianParts[0]));
+        jamMulai.setMinutes(parseInt(waktuUjianParts[1]));
+
+        // if (waktuSekarang < waktuUjian) {
+        //     swal("Peringatan !", "Maaf, belum saatnya untuk memulai ujian.", "warning");
+        if (jamSekarang < jamMulai) {
+            var jamMulaiFormatted = jamMulai.toLocaleTimeString('id-ID', { hour: 'numeric', minute: 'numeric', hour12: true });
+            swal("Peringatan !", "Ujian akan dapat dimulai pada pukul " + jamMulaiFormatted + ".", "warning");
+        } else {
+            var dataid = $(this).attr('data-id');
+            swal({
+                title: "Mulai Ujian ?"
+                , text: "Apakah kamu yakin ingin memulai ujian sekarang ?"
+                , icon: "warning"
+                , buttons: true
+                , dangerMode: true
+            }).then((willUpprove) => {
+                if (willUpprove) {
+                    window.location = "/ujian/" + dataid + "";
+                } else {
+                    swal("Ujian dibatalkan");
+                }
+            });
+        }
+    });
+</script>
+
+
+{% endblock %}

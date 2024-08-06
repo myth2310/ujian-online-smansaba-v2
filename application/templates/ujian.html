@@ -1,0 +1,220 @@
+{% extends 'component/testbase.html' %}
+
+{% block content %}
+
+<div class="container-fluid p-4" style="padding-bottom: 10%;">
+  <div class="row">
+    <div class="col-4">
+      <div class="card">
+        <div class="box bg-white">
+          <div class="row p-3">
+            <h3 class="pb-2">Detail Ujian</h3>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Nama</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0">: {{data.nama}} | {{data.kelas}}</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Ujian</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0">: {{detail.mapel}} | {{detail.kategori}}</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Tanggal</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0">: {{detail.tanggal}}</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Jam</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0">: {{detail.time_start}} - {{detail.time_done}}</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Durasi</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0">: {{detail.duration}} Menit</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <p id="countdown" class="text-center font-18 text-bold"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-8">
+      <div class="accordion" id="accordionExample">
+        <div class="card mb-0">
+          <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+              <a data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                <i class="me-1 fa fa-magnet" aria-hidden="true"></i>
+                <span>Soal Ujian</span>
+              </a>
+            </h5>
+          </div>
+          <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample"
+            style="max-height: 500px; overflow-y: auto;">
+            <div class="card-body">
+              <!-- <form id="quiz-form" action="/submit-quiz/{{id_kategori}}" method="post"> -->
+              <form id="quiz-form" action="/submit-quiz/{{ encrypt_id(id_kategori) }}" method="post">
+                {% for soal in soal%}
+                <div class="soal"
+                  style="background-color: rgba(252, 252, 252, 0.747); padding-left: 3%; padding-top: 1px; border-radius: 1%; font-size: 17px; margin-top: 1%;">
+                  <p style="text-align: justify; display: inline-block; width: 30px;">{{ soal.pertanyaan|safe }}</p>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question_{{ soal.id_soal }}" value="A">
+                    <label class="form-check-label" for="jawabanA" style="text-align: justify;">
+                      A. &nbsp;{{ soal.jawaban_a }}
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question_{{ soal.id_soal }}" value="B">
+                    <label class="form-check-label" for="jawabanB" style="text-align: justify;">
+                      B. &nbsp;{{ soal.jawaban_b }}
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question_{{ soal.id_soal }}" value="C">
+                    <label class="form-check-label" for="jawabanC" style="text-align: justify;">
+                      C. &nbsp;{{ soal.jawaban_c }}
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="question_{{ soal.id_soal }}" value="D">
+                    <label class="form-check-label" for="jawabanD" style="text-align: justify;">
+                      D. &nbsp;{{ soal.jawaban_d }}
+                    </label>
+                  </div>
+                </div>
+                {% endfor %}
+                <div class="d-flex justify-content-end"><button type="button"
+                    class="btn-lg text-white btn-success done">Selesai</button></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.go(1);
+  };
+
+  // Cegah refresh halaman kecuali selesai
+  window.onbeforeunload = function (e) {
+    if (!document.querySelector('.done').classList.contains('clicked')) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  };
+
+  var hidden, visibilityChange;
+  if (typeof document.hidden !== "undefined") {
+    hidden = "hidden";
+    visibilityChange = "visibilitychange";
+  }
+
+  var id_user = '{{data.id_user}}';
+  var id_kategori = '{{detail.id_kategori}}'
+
+  function handleVisibilityChange() {
+    if (document[hidden]) {
+
+      var data = { 'id_user': id_user, 'id_kategori': id_kategori };
+      fetch('/add_violation_data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+        .then(response => response.text())
+        .then(data => {
+          var pelanggaran = parseInt(data);
+
+          if (pelanggaran > 3) {
+            document.getElementById('quiz-form').submit();
+          }
+        })
+        .catch(error => console.error('Error:', error));
+
+      swal("Peringatan !", "Anda melanggar aturan dengan membuka halaman baru.", "info");
+
+    }
+  }
+  document.addEventListener(visibilityChange, handleVisibilityChange, false);
+</script>
+
+<script>
+  var durasiUjian = parseInt('{{detail.duration}}');
+  var detik = localStorage.getItem('detik') ? parseInt(localStorage.getItem('detik')) : durasiUjian * 60;
+  var id_kategori = "{{ id_kategori }}";
+  var countdownElement = document.getElementById('countdown');
+
+  var countdownInterval = setInterval(function () {
+    var menit = Math.floor(detik / 60);
+    var detikSisa = detik % 60;
+    detikSisa = detikSisa < 10 ? '0' + detikSisa : detikSisa;
+    countdownElement.innerHTML = 'Sisa Waktu: ' + menit + ':' + detikSisa;
+
+    if (detik == 0) {
+      clearInterval(countdownInterval);
+      countdownElement.innerHTML = 'Waktu Habis';
+      document.getElementById('quiz-form').submit();
+      localStorage.removeItem('detik');
+    } else {
+      detik--;
+      localStorage.setItem('detik', detik);
+    }
+  }, 1000);
+
+  document.querySelector('.done').addEventListener('click', function () {
+    Swal.fire({
+      title: 'Konfirmasi',
+      text: 'Apakah Anda yakin ingin mengirim kuis?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Selesai',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log('Menghapus detik dari localStorage');
+        localStorage.removeItem('detik');
+        clearInterval(countdownInterval);
+        window.onbeforeunload = function () {
+          localStorage.removeItem('detik');
+        };
+        document.getElementById('quiz-form').submit();
+        localStorage.setItem('detik', durasiUjian * 60);
+      }
+    });
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% endblock %}

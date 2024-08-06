@@ -1,0 +1,128 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Data Hasil Ujian</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Daftar Nilai</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="filter-form" class="row g-3">
+                                <div class="col-md-5">
+                                    <label for="mapel" class="visually-hidden">MATA PELAJARAN</label>
+                                    <select id="mapel" class="form-select" name="id_user"
+                                        aria-label="Default select example"
+                                        style="text-transform: uppercase; font-weight: bold;">
+                                        <option selected disabled value="">PILIH MATA PELAJARAN</option>
+                                        {% for mapel in mapel %}
+                                        <option style="text-transform: uppercase; font-weight: bold;"
+                                            value="{{mapel.id_user}}">{{mapel.nama}} - {{mapel.mapel}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="kelas" class="visually-hidden">KELAS</label>
+                                    <select id="kelas" class="form-select" name="kelas"
+                                        aria-label="Default select example"
+                                        style="text-transform: uppercase; font-weight: bold;">
+                                        <option selected disabled value="">PILIH KELAS</option>
+                                        {% for kelas in kelas %}
+                                        <option style="text-transform: uppercase; font-weight: bold;"
+                                            value="{{kelas.kelas}}">{{kelas.kelas}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <a id="download-btn" class="btn btn-success text-white"><i class="fa-solid fa-download"
+                                        style="margin-right: 10px;"></i>Download Excel</a>
+                
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                                <div class="table-responsive">
+
+                    <table id="zero_config" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="font-weight: bold;">Nama</th>
+                                <th style="font-weight: bold; text-align: center;">Quis</th>
+                                <th style="font-weight: bold; text-align: center;">UTS</th>
+                                <th style="font-weight: bold; text-align: center;">UAS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hasil-data">
+                            <!-- Data hasil ujian akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#mapel, #kelas').change(function () {
+            var id_user = $('#mapel').val();
+            var kelas = $('#kelas').val();
+
+            if (id_user && kelas) {
+                $.ajax({
+                    url: "{{ url_for('fetch_results') }}",
+                    type: "POST",
+                    data: { id_user: id_user, kelas: kelas },
+                    success: function (data) {
+                        var tableBody = $('#hasil-data');
+                        tableBody.empty();
+
+                        if (data.length > 0) {
+                            $.each(data, function (index, result) {
+                                var row = `<tr>
+                                <td style="text-transform: uppercase; font-weight: bold;">${result.nama}</td>
+                                <td style="font-weight: bold; text-align: center;">${result.quis}</td>
+                                <td style="font-weight: bold; text-align: center;">${result.uts}</td>
+                                <td style="font-weight: bold; text-align: center;">${result.uas}</td>
+                            </tr>`;
+                                tableBody.append(row);
+                            });
+                        } else {
+                            var row = `<tr>
+                            <td colspan="4" class="text-center">Tidak ada data yang ditemukan</td>
+                        </tr>`;
+                            tableBody.append(row);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error: " + error);
+                    }
+                });
+
+                $('#download-btn').attr('href', `/download-rekap?id_user=${id_user}&kelas=${kelas}`);
+            }
+        });
+    });
+</script>
+
+{% endblock %}

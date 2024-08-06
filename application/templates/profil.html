@@ -1,0 +1,86 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+    {% if data.email_ortu == None %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Peringatan !</strong> Harap lengkapi data informasi orang tua sebelum mulai ujian
+    </div>
+    {% else %}
+    {% endif %}
+    <div class="card">
+        <div class="card-body">
+            <div class="float-end"><a href="/form-edit-profil/{{data.id_user}}" class="btn btn-warning">Edit Data
+                    Diri</a></div>
+            <div class="row pt-4">
+                <div class="col-3">
+                    <div class="text-center">
+                        <img src="https://www.pngitem.com/pimgs/m/78-786293_1240-x-1240-0-avatar-profile-icon-png.png"
+                            alt="user" width="70%" class="rounded-circle">
+                    </div>
+                </div>
+                <div class="col-9">
+                    <h3 class="pb-3">Informasi Data Diri</h3>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Nama</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">: {{data.nama}}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Email</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">: {{data.email}}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Kelas</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0">: {{data.kelas}}</p>
+                        </div>
+                    </div>
+
+                    <h5 class="pb-3 pt-4">Informasi Orang Tua</h5>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Nama</p>
+                        </div>
+                        <div class="col-sm-9">
+                            {% if data.nama_ortu == None %}
+                            <p class="text-muted mb-0">: -</p>
+                            {% else %}
+                            <p class="text-muted mb-0">: {{data.nama_ortu}}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Email Orang Tua</p>
+                        </div>
+                        <div class="col-sm-9">
+                            {% if data.email_ortu == None %}
+                            <p class="text-muted mb-0">: -</p>
+                            {% else %}
+                            <p class="text-muted mb-0">: {{data.email_ortu}}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

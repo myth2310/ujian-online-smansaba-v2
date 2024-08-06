@@ -1,0 +1,168 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<script>
+    swal("Hapus Data", "{{message}}", "error");
+</script>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<div class="container-fluid">
+    {% if tahun_akademik %}
+    <div class="col">
+        <div class="alert alert-dark font-20" role="alert">
+            <i class="fa-solid fa-school" style="margin-right: 15px;"></i>Tahun Akademik {{tahun_akademik.tahun_akademik}} {{tahun_akademik.semester}}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if session['level'] == 'Admin' %}
+    <div class="row">
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-info font-19" role="alert">
+                    Selamat Datang, <span class="font-bold">{%if session ['nama']%}{{ session['nama']
+                        }}{%else%}{%endif%}</span>
+                </div>
+            </div>
+            
+        </div>
+        <div class="row">
+            <!-- Column -->
+            <div class="col-3">
+                <div class="bg-dark p-10 text-white text-center">
+                    <i class="fas fa-users mb-1 font-16"></i>
+                    <h3 class="mb-0 mt-1">{{count_siswa}}</h3>
+                    <h5 class="font-light">Total Siswa</h5>
+                </div>
+            </div>
+            <!-- Column -->
+            <div class="col-3">
+                <div class="bg-primary p-10 text-white text-center">
+                    <i class="fa fa-user mb-1 font-16"></i>
+                    <h3 class="mb-0 mt-1">{{count_guru}}</h3>
+                    <h5 class="font-light">Total Guru</h5>
+                </div>
+            </div>
+            <!-- Column -->
+            <div class="col-3">
+                <div class="bg-success p-10 text-white text-center">
+                    <i class="fas fa-suitcase mb-1 font-16"></i>
+                    <h3 class="mb-0 mt-1">{{count_kelas}}</h3>
+                    <h5 class="font-light">Total Kelas</h5>
+                </div>
+            </div>
+            <!-- Column -->
+            <div class="col-3">
+                <div class="bg-warning p-10 text-white text-center">
+                    <i class="fas fa-book mb-1 font-16"></i>
+                    <h3 class="mb-0 mt-1">{{count_mapel}}</h3>
+                    <h5 class="font-light">Total Mata Pelajaran</h5>
+                </div>
+            </div>
+        </div>
+        {% elif session['level'] == 'Guru' %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-info font-20" role="alert">
+                    Selamat Datang, <span class="font-bold">{%if session ['nama']%}{{ session['nama']
+                        }}{%else%}{%endif%}</span>
+                </div>
+            </div>
+        </div>
+        <div class="accordion" id="accordionExample">
+            <div class="card mb-0">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <a data-toggle="collapse" data-target="#collapseOne" aria-expanded="true"
+                            aria-controls="collapseOne">
+                            <i class="me-1 fa fa-magnet" aria-hidden="true"></i>
+                            <span>Petunjuk Penggunaan</span>
+                        </a>
+                    </h5>
+                </div>
+                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                    data-parent="#accordionExample">
+                    <div class="card-body">
+                        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                        richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor
+                        brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor,
+                        sunt aliqua put a bird on it squid single-origin coffee nulla assumenda
+                        shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson
+                        cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo.
+                        Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt
+                        you probably haven't heard of them accusamus labore sustainable VHS.
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+
+        {% if data.no_ortu == None %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Peringatan !</strong> Harap lengkapi data informasi orang tua sebelum mulai ujian
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% else %}
+        {% endif %}
+
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-info font-20" role="alert">
+                    Selamat Datang, <span class="font-bold">{%if session ['nama']%}{{ session['nama']
+                        }}{%else%}{%endif%}</span>
+                </div>
+            </div>
+        </div>
+        <div class="accordion" id="accordionExample">
+            <div class="card mb-0">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <a data-toggle="collapse" data-target="#collapseOne" aria-expanded="true"
+                            aria-controls="collapseOne">
+                            <i class="me-1 fa fa-magnet" aria-hidden="true"></i>
+                            <span>Petunjuk Penggunaan Ujian Online</span>
+                        </a>
+                    </h5>
+                </div>
+                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                    data-parent="#accordionExample">
+                    <div class="card-body">
+                        <ul style="list-style: decimal; font-size: 15px;">
+                            <li>Silakan pastikan Anda berada di tempat yang tenang dan bebas gangguan sebelum memulai
+                                ujian ini.</li>
+                            <li>Bacalah setiap pertanyaan dengan cermat sebelum memilih jawaban yang tepat.</li>
+                            <li>Pilihlah jawaban yang menurut Anda paling benar dari pilihan yang disediakan.</li>
+                            <li>Jika Anda merasa sulit menjawab suatu pertanyaan, jangan terlalu lama memikirkannya,
+                                lanjutkan ke pertanyaan berikutnya dan kembali ke pertanyaan tersebut di akhir jika
+                                waktu masih cukup.</li>
+                            <li>Pastikan Anda mengklik tombol "Kirim" setelah menyelesaikan semua pertanyaan. Anda tidak
+                                akan dapat kembali ke pertanyaan sebelumnya setelah mengirim jawaban.</li>
+                            <li>Jika ada pertanyaan atau masalah teknis, jangan ragu untuk menghubungi pengawas ujian.
+                            </li>
+                            <li>Selamat mengerjakan, tetap tenang, dan tetap fokus selama ujian berlangsung.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    </body>
+
+    </html>
+
+
+
+
+
+
+
+
+    {% endblock %}
