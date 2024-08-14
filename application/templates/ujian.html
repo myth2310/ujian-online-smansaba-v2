@@ -75,8 +75,8 @@
           <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample"
             style="max-height: 500px; overflow-y: auto;">
             <div class="card-body">
-              <!-- <form id="quiz-form" action="/submit-quiz/{{id_kategori}}" method="post"> -->
-              <form id="quiz-form" action="/submit-quiz/{{ encrypt_id(id_kategori) }}" method="post">
+              <form id="quiz-form" action="/submit-quiz/{{id_kategori}}" method="post">
+              <!-- <form id="quiz-form" action="/submit-quiz/{{ encrypt_id(id_kategori) }}" method="post"> -->
                 {% for soal in soal%}
                 <div class="soal"
                   style="background-color: rgba(252, 252, 252, 0.747); padding-left: 3%; padding-top: 1px; border-radius: 1%; font-size: 17px; margin-top: 1%;">

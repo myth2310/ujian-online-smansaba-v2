@@ -100,11 +100,11 @@ def fetch_results():
         FROM users
         JOIN kelas ON users.id_kelas = kelas.id_kelas
         LEFT JOIN hasil_ujian ON hasil_ujian.id_user = users.id_user
-        LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori
-        WHERE kelas.kelas = %s AND kategori.id_user = %s
+        LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori AND kategori.id_user = %s
+        WHERE kelas.kelas = %s
         GROUP BY users.id_user, kelas.kelas
     '''
-    cursor.execute(query, (kelas, id_user))
+    cursor.execute(query, (id_user, kelas))
     results = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -318,17 +318,43 @@ def dataSiswa():
     if 'islogin' in session:
         conn = mysql.connection
         curl = conn.cursor(dictionary=True)
-        curl.execute('''
-            SELECT kelas.*, jurusan.jurusan, COUNT(users.id_user) as total_siswa
-            FROM kelas 
-            LEFT JOIN jurusan ON kelas.id_jurusan = jurusan.id_jurusan
-            LEFT JOIN users ON kelas.id_kelas = users.id_kelas AND users.level = 'Siswa'
-            GROUP BY kelas.id_kelas
-        ''')
-        kelas = curl.fetchall()
-        return render_template('admin/siswa.html',kelas=kelas)
+       
+
+        curl.execute('SELECT * FROM kelas')
+        data_kelas = curl.fetchall()
+        curl.execute('SELECT * FROM tahun_akademik')
+        tahun_akademik = curl.fetchall()
+
+        return render_template('admin/siswa.html',kelas=kelas, data_kelas=data_kelas,tahun_akademik=tahun_akademik )
     else:
         return redirect(url_for('login'))
+    
+
+@app.route('/fetch_results_siswa', methods=['POST'])
+def fetch_results_siswa():
+    conn = mysql.connection
+    cursor = conn.cursor(dictionary=True)
+    
+    id_tahun_akademik = request.form.get('id_tahun_akademik')
+    id_kelas = request.form.get('kelas')
+
+
+    cursor.execute('''
+        SELECT users.*, kelas.kelas, jurusan.jurusan
+        FROM users 
+        LEFT JOIN kelas ON kelas.id_kelas = users.id_kelas
+        LEFT JOIN jurusan ON users.id_jurusan = jurusan.id_jurusan
+        WHERE users.level = 'Siswa' 
+        AND users.id_tahun_akademik = %s
+        AND users.id_kelas = %s 
+    ''', (id_tahun_akademik, id_kelas))
+    
+    results = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return jsonify(results)
+
     
 @app.route('/daftar-siswa/<int:id_kelas>', methods=['GET'])
 def daftarSiswa(id_kelas):
@@ -403,9 +429,14 @@ def formRegistrasi():
         curl.execute("SELECT * FROM kelas")
         kelas = curl.fetchall()
 
+        # Correct SQL query and cursor usage
+        curl.execute("SELECT * FROM tahun_akademik WHERE status = 'Aktif'")
+        akademik = curl.fetchone()
+
+
         curl.execute("SELECT * FROM jurusan")
         jurusan = curl.fetchall()
-        return render_template('admin/formRegistrasi.html',kelas=kelas,mapel=mapel,jurusan=jurusan)
+        return render_template('admin/formRegistrasi.html',kelas=kelas,mapel=mapel,jurusan=jurusan,akademik=akademik)
     else:
         return redirect(url_for('login'))
     
@@ -502,24 +533,28 @@ def daftarNilaiSiswa(id_kategori, kelas):
         kelas = kelas.replace('-', ' ')
         conn = mysql.connection
         curl = conn.cursor(dictionary=True)
+        
+        # Perbaiki query SQL
         curl.execute("""
-            SELECT users.nama, 
-                   COALESCE(hasil_ujian.hasil, 'N/A') as hasil, 
-                   CASE 
-                       WHEN hasil_ujian.hasil IS NOT NULL THEN 'Sudah Mengerjakan' 
-                       ELSE 'Belum mengerjakan' 
-                   END as status
-            FROM users
-            JOIN kelas ON users.id_kelas = kelas.id_kelas
-            LEFT JOIN hasil_ujian ON hasil_ujian.id_user = users.id_user
-            LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori
-            WHERE users.id_kelas = (SELECT id_kelas FROM kelas WHERE kelas.kelas = %s) 
-              AND (kategori.id_kategori = %s) 
-              AND (kategori.id_user = %s OR kategori.id_user IS NULL)
-            """, (kelas, id_kategori, session['id_user']))
+            SELECT 
+                users.nama, 
+                COALESCE(hasil_ujian.hasil, 'N/A') as hasil, 
+                CASE 
+                    WHEN hasil_ujian.hasil IS NOT NULL THEN 'Sudah Mengerjakan' 
+                    ELSE 'Belum mengerjakan' 
+                END as status
+            FROM 
+                users
+            JOIN 
+                kelas ON users.id_kelas = kelas.id_kelas
+            LEFT JOIN 
+                hasil_ujian ON hasil_ujian.id_user = users.id_user AND hasil_ujian.id_kategori = %s
+            WHERE 
+                kelas.kelas = %s 
+                AND (hasil_ujian.id_kategori = %s OR hasil_ujian.id_kategori IS NULL)
+            """, (id_kategori, kelas, id_kategori))
 
         nilai_siswa = curl.fetchall()
-        print(nilai_siswa)
         
         return render_template('guru/daftar-nilai-siswa.html', nilai_siswa=nilai_siswa, kelas=kelas)
     else:
@@ -886,12 +921,13 @@ def insertUser():
     level = request.form['level']
     id_mapel = request.form['id_mapel']
     id_jurusan = request.form['id_jurusan']
+    id_tahun_akademik = request.form['id_tahun_akademik']
     id_kelas = request.form['id_kelas']
     password = request.form['password'] 
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     conn = mysql.connection
     cur = conn.cursor()
-    cur.execute("INSERT INTO users (nama,email,status,level,id_mapel,id_jurusan,id_kelas,password) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",(nama,email,status,level,id_mapel,id_jurusan,id_kelas,hashed_password))
+    cur.execute("INSERT INTO users (nama,email,status,level,id_mapel,id_jurusan,id_tahun_akademik,id_kelas,password) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",(nama,email,status,level,id_mapel,id_jurusan,id_tahun_akademik,id_kelas,hashed_password))
     conn.commit()
     return redirect(url_for('home'))
 

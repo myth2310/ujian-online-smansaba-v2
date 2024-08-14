@@ -48,10 +48,10 @@
                                 {% if ujian.id_kategori in ujianSelesai or formatted_datetime > ujian.time_done or formatted_date > ujian.tanggal  %}
                                 <button type="button" class="btn btn-success text-white" disabled>Ujian Selesai</button>
                                 {% else %}
-                                <!-- <button type="button" data-id="{{ ujian.id_kategori }}" data-date="{{ujian.tanggal}}" date-time="{{ujian.time_start}}"
-                                    class="btn btn-danger text-white mb-4 start">Mulai Ujian</button> -->
-                                <button type="button" data-id="{{ encrypt_id(ujian.id_kategori) }}" data-date="{{ujian.tanggal}}" date-time="{{ujian.time_start}}"
+                                <button type="button" data-id="{{ ujian.id_kategori }}" data-date="{{ujian.tanggal}}" date-time="{{ujian.time_start}}"
                                     class="btn btn-danger text-white mb-4 start">Mulai Ujian</button>
+                                <!-- <button type="button" data-id="{{ encrypt_id(ujian.id_kategori) }}" data-date="{{ujian.tanggal}}" date-time="{{ujian.time_start}}"
+                                    class="btn btn-danger text-white mb-4 start">Mulai Ujian</button> -->
                                 {% endif %}
                             </td>
                         </tr>
