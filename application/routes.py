@@ -175,11 +175,13 @@ def insertTahunAkademik():
     conn = mysql.connection
     cur = conn.cursor()
 
-    cur.execute("SELECT COUNT(*) FROM tahun_akademik WHERE tahun_akademik = %s", (tahun_akademik,))
+    # Query untuk memeriksa apakah kombinasi tahun akademik dan semester sudah ada
+    cur.execute("SELECT COUNT(*) FROM tahun_akademik WHERE tahun_akademik = %s AND semester = %s", (tahun_akademik, semester))
     result = cur.fetchone()
-    
+
+    # Jika kombinasi tahun akademik dan semester sudah ada
     if result[0] > 0:
-        flash('Tahun Akademik sudah ada, silakan masukkan tahun yang berbeda.', 'error')
+        flash('Tahun Akademik dan Semester sudah ada, silakan masukkan kombinasi yang berbeda.', 'error')
         return redirect(url_for('tahunAkademik'))
 
     if status == 'Aktif':
@@ -684,18 +686,57 @@ def hasil():
         conn = mysql.connection
         curl = conn.cursor(dictionary=True)
         query = '''
-                SELECT hasil_ujian.*,kategori.kategori,mapel.mapel
-                FROM hasil_ujian 
-                LEFT JOIN users ON hasil_ujian.id_user = users.id_user
-                LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori
-                LEFT JOIN mapel ON mapel.id_mapel = kategori.id_mapel
-                WHERE hasil_ujian.id_user = %s
+                SELECT * FROM mapel
             '''
-        curl.execute(query,(session['id_user'],))
+        curl.execute(query)
         data = curl.fetchall()
         return render_template('siswa/hasil.html',data=data)
     else:
         return redirect(url_for('login'))
+    
+@app.route('/daftar-ujian/<id_mapel>')
+def daftarUjian(id_mapel):
+    if 'islogin' in session:
+        conn = mysql.connection
+        curl = conn.cursor(dictionary=True)
+        
+        query = '''
+            SELECT hasil_ujian.*, kategori.kategori, mapel.mapel
+            FROM hasil_ujian 
+            LEFT JOIN users ON hasil_ujian.id_user = users.id_user
+            LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori
+            LEFT JOIN mapel ON mapel.id_mapel = kategori.id_mapel
+            WHERE hasil_ujian.id_user = %s AND kategori.id_mapel = %s
+        '''
+        
+        curl.execute(query, (session['id_user'], id_mapel))
+        data = curl.fetchall()  # Fetch all rows once
+
+        curl.close()  # Close the cursor
+        conn.close()  # Close the connection
+        
+        return render_template('siswa/daftar-nilai-siswa.html', data=data)
+    else:
+        return redirect(url_for('login'))
+    
+# @app.route('/hasil-ujian')
+# def hasil2():
+#     if 'islogin' in session:
+#         conn = mysql.connection
+#         curl = conn.cursor(dictionary=True)
+#         query = '''
+#                 SELECT hasil_ujian.*,kategori.kategori,mapel.mapel
+#                 FROM hasil_ujian 
+#                 LEFT JOIN users ON hasil_ujian.id_user = users.id_user
+#                 LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori
+#                 LEFT JOIN mapel ON mapel.id_mapel = kategori.id_mapel
+#                 WHERE hasil_ujian.id_user = %s
+#             '''
+#         curl.execute(query,(session['id_user'],))
+#         data = curl.fetchall()
+#         return render_template('siswa/hasil.html',data=data)
+#     else:
+#         return redirect(url_for('login'))
 
 # @app.route('/ujian/<encrypted_id_kategori>', methods=['GET', 'POST'])
 # def ujian(encrypted_id_kategori):

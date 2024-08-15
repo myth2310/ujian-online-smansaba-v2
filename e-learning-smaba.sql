@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 06, 2024 at 01:36 PM
+-- Generation Time: Aug 15, 2024 at 02:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -131,6 +131,7 @@ CREATE TABLE `users` (
   `id_mapel` int(4) DEFAULT NULL,
   `id_jurusan` int(4) DEFAULT NULL,
   `id_kelas` int(4) DEFAULT NULL,
+  `id_tahun_akademik` int(5) DEFAULT NULL,
   `nama` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `status` varchar(10) NOT NULL,
@@ -144,8 +145,8 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id_user`, `id_mapel`, `id_jurusan`, `id_kelas`, `nama`, `email`, `status`, `level`, `password`, `nama_ortu`, `email_ortu`) VALUES
-(1, NULL, NULL, NULL, 'Adminsmansabajaya', 'adminsmansaba@gmail.com', 'Aktif', 'Admin', '0b39c72e5e5cbcdbe5e17416b7c9bffe1498a36f7eafb81617a605c330dbdaa5', NULL, NULL);
+INSERT INTO `users` (`id_user`, `id_mapel`, `id_jurusan`, `id_kelas`, `id_tahun_akademik`, `nama`, `email`, `status`, `level`, `password`, `nama_ortu`, `email_ortu`) VALUES
+(1, NULL, NULL, NULL, NULL, 'Adminsmansabajaya', 'adminsmansaba@gmail.com', 'Aktif', 'Admin', '0b39c72e5e5cbcdbe5e17416b7c9bffe1498a36f7eafb81617a605c330dbdaa5', NULL, NULL);
 
 --
 -- Indexes for dumped tables
