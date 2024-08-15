@@ -57,6 +57,9 @@
             <div class="row">
               <p id="countdown" class="text-center font-18 text-bold"></p>
             </div>
+            <div id="violation-alert" class="alert alert-danger d-none" role="alert" style="font-size: 10px;">
+              Peringatan: Anda telah melanggar aturan sebanyak 3 kali! Jika Anda melanggar 1 kali lagi, ujian ini akan disubmit secara otomatis.
+            </div>            
           </div>
         </div>
       </div>
@@ -75,8 +78,7 @@
           <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample"
             style="max-height: 500px; overflow-y: auto;">
             <div class="card-body">
-              <form id="quiz-form" action="/submit-quiz/{{id_kategori}}" method="post">
-              <!-- <form id="quiz-form" action="/submit-quiz/{{ encrypt_id(id_kategori) }}" method="post"> -->
+              <form id="quiz-form" action="/submit-quiz/{{ id_kategori }}" method="post">
                 {% for soal in soal%}
                 <div class="soal"
                   style="background-color: rgba(252, 252, 252, 0.747); padding-left: 3%; padding-top: 1px; border-radius: 1%; font-size: 17px; margin-top: 1%;">
@@ -119,19 +121,6 @@
 </div>
 
 <script>
-  history.pushState(null, null, location.href);
-  window.onpopstate = function () {
-    history.go(1);
-  };
-
-  // Cegah refresh halaman kecuali selesai
-  window.onbeforeunload = function (e) {
-    if (!document.querySelector('.done').classList.contains('clicked')) {
-      e.preventDefault();
-      e.returnValue = '';
-    }
-  };
-
   var hidden, visibilityChange;
   if (typeof document.hidden !== "undefined") {
     hidden = "hidden";
@@ -155,6 +144,10 @@
         .then(response => response.text())
         .then(data => {
           var pelanggaran = parseInt(data);
+
+          if (pelanggaran == 3) {
+            document.getElementById('violation-alert').classList.remove('d-none');
+          }
 
           if (pelanggaran > 3) {
             document.getElementById('quiz-form').submit();

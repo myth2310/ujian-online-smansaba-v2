@@ -175,11 +175,9 @@ def insertTahunAkademik():
     conn = mysql.connection
     cur = conn.cursor()
 
-    # Query untuk memeriksa apakah kombinasi tahun akademik dan semester sudah ada
     cur.execute("SELECT COUNT(*) FROM tahun_akademik WHERE tahun_akademik = %s AND semester = %s", (tahun_akademik, semester))
     result = cur.fetchone()
 
-    # Jika kombinasi tahun akademik dan semester sudah ada
     if result[0] > 0:
         flash('Tahun Akademik dan Semester sudah ada, silakan masukkan kombinasi yang berbeda.', 'error')
         return redirect(url_for('tahunAkademik'))
@@ -850,6 +848,7 @@ def ujian(id_kategori):
 def listUjian():
     conn = mysql.connection
     curl = conn.cursor(dictionary=True)
+
     curl.execute('''
         SELECT kategori.*, mapel.mapel
         FROM kategori
@@ -890,6 +889,57 @@ def listUjian():
 
 def get_current_time():
     return datetime.now()
+
+from datetime import datetime
+
+def check_incomplete_exams_and_send_email():
+    conn = mysql.connection
+    curl = conn.cursor(dictionary=True)
+
+    curl.execute('''
+        SELECT users.id_user, users.email_ortu, users.nama_ortu, users.nama, kategori.id_kategori, kategori.tanggal, kategori.time_done
+        FROM users
+        JOIN kategori ON users.id_user = kategori.id_user
+        LEFT JOIN hasil_ujian ON kategori.id_kategori = hasil_ujian.id_kategori 
+            AND users.id_user = hasil_ujian.id_user
+        WHERE hasil_ujian.id_user IS NULL 
+        AND CONCAT(kategori.tanggal, ' ', kategori.time_done) < NOW()
+    ''')
+
+    incomplete_exams = curl.fetchall()
+
+    for exam in incomplete_exams:
+        id_user = exam['id_user']
+        id_kategori = exam['id_kategori']
+        email_ortu = exam['email_ortu']
+        nama_ortu = exam['nama_ortu']
+        nama_siswa = exam['nama']
+        tanggal = exam['tanggal']
+        time_done = exam['time_done']
+
+        # Gabungkan tanggal dan time_done menjadi batas_waktu
+        batas_waktu_str = f"{tanggal} {time_done}"
+                # Gunakan format '%Y-%m-%d %H:%M' karena time_done tidak memiliki detik
+        batas_waktu = datetime.strptime(batas_waktu_str, "%Y-%m-%d %H:%M")
+
+        # Kirim email ke orang tua
+        mail_message = Message(
+            f"Ujian Belum Dikerjakan {nama_siswa} | SMAN Balapulang 1",
+            recipients=[email_ortu]
+        )
+        mail_message.body = (
+            f"Assalamualaikum Wr. Wb Selamat Siang Ibu/Bapak {nama_ortu} \n\n"
+            f"Kami informasikan bahwa {nama_siswa} belum menyelesaikan ujian yang diberikan sebelum batas waktu yang ditentukan. \n"
+            f"Batas waktu ujian: {batas_waktu}. \n\n"
+            f"Harap memberikan perhatian lebih agar {nama_siswa} dapat menyelesaikan ujian tepat waktu di masa mendatang.\n\n"
+            f"Terima kasih kami sampaikan, Wassalamualaikum Wr. Wb \n\n"
+            f"Ttd, Akademik SMAN Balapulang 1"
+        )
+        mail.send(mail_message)
+
+    conn.close()
+
+
 
 #Action Guru
 @app.route('/insert-jenis-ujian', methods=['POST'])
@@ -1447,15 +1497,22 @@ def add_violation_data():
         id_kategori = data.get('id_kategori')
         conn = mysql.connection
         cur = conn.cursor()
+        
+        # Update the pelanggaran count
         cur.execute("UPDATE hasil_ujian SET pelanggaran = COALESCE(pelanggaran, 0) + 1 WHERE id_user = %s AND id_kategori = %s", (id_user, id_kategori))
         conn.commit()
 
+        # Fetch the updated pelanggaran count
         pelanggaran_query = 'SELECT pelanggaran FROM hasil_ujian WHERE id_user = %s AND id_kategori = %s'
         cur.execute(pelanggaran_query, (id_user, id_kategori))
         pelanggaran_result = cur.fetchone()
-        pelanggaran = pelanggaran_result['pelanggaran'] if pelanggaran_result else 0
+        
+        # Access the result using an integer index
+        pelanggaran = pelanggaran_result[0] if pelanggaran_result else 0
 
-        return str(pelanggaran)  
+        print(pelanggaran)
+        return str(pelanggaran)
+ 
 
 @app.route('/score')
 def score():
@@ -1467,4 +1524,6 @@ def logout():
     return redirect(url_for('login'))
 
 
+
+    
 
