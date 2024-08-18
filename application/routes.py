@@ -10,6 +10,7 @@ import traceback
 from cryptography.fernet import Fernet
 import base64
 from io import BytesIO
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app.secret_key = 'your_secret_key'
 
@@ -556,7 +557,7 @@ def daftarNilaiSiswa(id_kategori, kelas):
 
         nilai_siswa = curl.fetchall()
         
-        return render_template('guru/daftar-nilai-siswa.html', nilai_siswa=nilai_siswa, kelas=kelas)
+        return render_template('guru/daftar-nilai-siswa.html', nilai_siswa=nilai_siswa, kelas=kelas,id_kategori=id_kategori)
     else:
         return redirect(url_for('login'))
 
@@ -889,56 +890,6 @@ def listUjian():
 
 def get_current_time():
     return datetime.now()
-
-from datetime import datetime
-
-def check_incomplete_exams_and_send_email():
-    conn = mysql.connection
-    curl = conn.cursor(dictionary=True)
-
-    curl.execute('''
-        SELECT users.id_user, users.email_ortu, users.nama_ortu, users.nama, kategori.id_kategori, kategori.tanggal, kategori.time_done
-        FROM users
-        JOIN kategori ON users.id_user = kategori.id_user
-        LEFT JOIN hasil_ujian ON kategori.id_kategori = hasil_ujian.id_kategori 
-            AND users.id_user = hasil_ujian.id_user
-        WHERE hasil_ujian.id_user IS NULL 
-        AND CONCAT(kategori.tanggal, ' ', kategori.time_done) < NOW()
-    ''')
-
-    incomplete_exams = curl.fetchall()
-
-    for exam in incomplete_exams:
-        id_user = exam['id_user']
-        id_kategori = exam['id_kategori']
-        email_ortu = exam['email_ortu']
-        nama_ortu = exam['nama_ortu']
-        nama_siswa = exam['nama']
-        tanggal = exam['tanggal']
-        time_done = exam['time_done']
-
-        # Gabungkan tanggal dan time_done menjadi batas_waktu
-        batas_waktu_str = f"{tanggal} {time_done}"
-                # Gunakan format '%Y-%m-%d %H:%M' karena time_done tidak memiliki detik
-        batas_waktu = datetime.strptime(batas_waktu_str, "%Y-%m-%d %H:%M")
-
-        # Kirim email ke orang tua
-        mail_message = Message(
-            f"Ujian Belum Dikerjakan {nama_siswa} | SMAN Balapulang 1",
-            recipients=[email_ortu]
-        )
-        mail_message.body = (
-            f"Assalamualaikum Wr. Wb Selamat Siang Ibu/Bapak {nama_ortu} \n\n"
-            f"Kami informasikan bahwa {nama_siswa} belum menyelesaikan ujian yang diberikan sebelum batas waktu yang ditentukan. \n"
-            f"Batas waktu ujian: {batas_waktu}. \n\n"
-            f"Harap memberikan perhatian lebih agar {nama_siswa} dapat menyelesaikan ujian tepat waktu di masa mendatang.\n\n"
-            f"Terima kasih kami sampaikan, Wassalamualaikum Wr. Wb \n\n"
-            f"Ttd, Akademik SMAN Balapulang 1"
-        )
-        mail.send(mail_message)
-
-    conn.close()
-
 
 
 #Action Guru
@@ -1523,7 +1474,110 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+def check_incomplete_exams_and_send_email():
+    conn = mysql.connection
+    curl = conn.cursor(dictionary=True)
+
+    curl.execute('''
+        SELECT users.id_user, users.email_ortu, users.nama_ortu, users.nama, kategori.id_kategori, kategori.tanggal, kategori.time_done
+        FROM users
+        JOIN kategori ON users.id_user = kategori.id_user
+        LEFT JOIN hasil_ujian ON kategori.id_kategori = hasil_ujian.id_kategori 
+            AND users.id_user = hasil_ujian.id_user
+        WHERE hasil_ujian.id_user IS NULL 
+        AND CONCAT(kategori.tanggal, ' ', kategori.time_done) < NOW()
+    ''')
+
+    incomplete_exams = curl.fetchall()
+
+    for exam in incomplete_exams:
+        id_user = exam['id_user']
+        id_kategori = exam['id_kategori']
+        email_ortu = exam['email_ortu']
+        nama_ortu = exam['nama_ortu']
+        nama_siswa = exam['nama']
+        tanggal = exam['tanggal']
+        time_done = exam['time_done']
+
+        batas_waktu_str = f"{tanggal} {time_done}"
+        batas_waktu = datetime.strptime(batas_waktu_str, "%Y-%m-%d %H:%M")
+
+        mail_message = Message(
+            f"Ujian Belum Dikerjakan {nama_siswa} | SMAN Balapulang 1",
+            recipients=[email_ortu]
+        )
+        mail_message.body = (
+            f"Assalamualaikum Wr. Wb Selamat Siang Ibu/Bapak {nama_ortu} \n\n"
+            f"Kami informasikan bahwa {nama_siswa} belum menyelesaikan ujian yang diberikan sebelum batas waktu yang ditentukan. \n"
+            f"Batas waktu ujian: {batas_waktu}. \n\n"
+            f"Harap memberikan perhatian lebih agar {nama_siswa} dapat menyelesaikan ujian tepat waktu di masa mendatang.\n\n"
+            f"Terima kasih kami sampaikan, Wassalamualaikum Wr. Wb \n\n"
+            f"Ttd, Akademik SMAN Balapulang 1"
+        )
+        mail.send(mail_message)
+
+    conn.close()
 
 
-    
+@app.route('/get-email-ortu/<int:id_kategori>/<kelas>', methods=['GET'])
+def getEmailOrtu(id_kategori, kelas):
+    if 'islogin' in session:
+        kelas = kelas.replace('-', ' ')
+        conn = mysql.connection
+        curl = conn.cursor(dictionary=True)
+        
+        # Query to get emails of parents of students who haven't completed the exam
+        curl.execute("""
+        SELECT 
+            users.nama as nama_siswa, 
+            users.email_ortu, 
+            users.nama_ortu, 
+            kategori.tanggal,
+            kategori.time_start,
+            kategori.time_done
+        FROM 
+            users
+        JOIN 
+            kelas ON users.id_kelas = kelas.id_kelas
+        LEFT JOIN 
+            hasil_ujian ON hasil_ujian.id_user = users.id_user AND hasil_ujian.id_kategori = %s
+        LEFT JOIN 
+            kategori ON kategori.id_kategori = %s
+        WHERE 
+            kelas.kelas = %s 
+            AND hasil_ujian.hasil IS NULL
+        """, (id_kategori, id_kategori, kelas))
+
+        siswa_belum_mengerjakan = curl.fetchall()
+        
+        # Send email to each parent
+        for siswa in siswa_belum_mengerjakan:
+            email_ortu = siswa['email_ortu']
+            if email_ortu:  # Only send email if email_ortu is not null or empty
+                nama_siswa = siswa['nama_siswa']
+                nama_ortu = siswa['nama_ortu'] if siswa['nama_ortu'] else "Orang Tua/Wali"
+                batas_waktu = siswa['tanggal'] if siswa['tanggal'] else "Tidak Ada Batas Waktu"
+
+                mail_message = Message(
+                    f"Ujian Belum Dikerjakan {nama_siswa} | SMAN Balapulang 1",
+                    recipients=[email_ortu]
+                )
+                mail_message.body = (
+                    f"Assalamualaikum Wr. Wb Selamat Siang Ibu/Bapak {nama_ortu},\n\n"
+                    f"Kami informasikan bahwa {nama_siswa} belum menyelesaikan ujian yang diberikan sebelum batas waktu yang ditentukan.\n"
+                    f"Batas waktu ujian: {batas_waktu}.\n\n"
+                    f"Harap memberikan perhatian lebih agar {nama_siswa} dapat menyelesaikan ujian tepat waktu di masa mendatang.\n\n"
+                    f"Terima kasih kami sampaikan, Wassalamualaikum Wr. Wb.\n\n"
+                    f"Ttd, Akademik SMAN Balapulang 1"
+                )
+                mail.send(mail_message)
+        
+        # Flash message for success
+        flash(f"Emails have been successfully sent to parents of students who haven't completed the exam.", "success")
+        
+        # Redirect back to the previous page
+        return redirect(request.referrer)
+    else:
+        return jsonify({"success": False}), 403
+
 
