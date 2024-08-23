@@ -1,0 +1,96 @@
+{% extends 'component/base.html' %}
+
+{% block content %}
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<script>
+    Swal.fire({
+        text: "{{ message }}",
+        icon: "{{ 'error' if category == 'error' else 'success' }}",
+        title: "Informasi!",
+        showConfirmButton: false,
+        timer: 1500
+    });
+</script>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Form Tambah Rombel</h4>
+            <div class="ms-auto text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Form Tambah Rombel</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md">
+            <div class="card">
+                <form action="{{ url_for('insert_rombel') }}" class="form-horizontal" method="POST">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input hidden type="text" id="semester" name="id_tahun_akademik"
+                                        class="form-control demo" value="{{akademik.akademik_id }}">
+                                </div>
+                              
+                                <div class="form-group">
+                                    <label for="hue-demo">Tahun Akademik</label>
+                                    <input type="text" id="semester" class="form-control demo"
+                                        value="{{akademik.tahun_akademik }} - {{akademik.semester }}" readonly  style="text-transform: capitalize;">
+                                </div>
+
+                                <div class="form-group" id="mata-pelajaran-form">
+                                    <label for="mata-pelajaran">Daftar Siswa</label>
+                                    <select id="mata-pelajaran" name="id_user" class="select2 form-select shadow-none"
+                                        style="width: 100%; height:36px;" style="text-transform: uppercase; font-weight: 700;">
+                                        <option selected value="" style="text-transform: uppercase; font-weight: 700;">--- Pilih Siswa ---</option>
+                                        {% for data_siswa in data_siswa %}
+                                        <option value="{{data_siswa.id_user}}"  style="text-transform: uppercase; font-weight: 700;">{{data_siswa.nama}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="mata-pelajaran-form" >
+                                    <label for="mata-pelajaran">Mata Kelas</label>
+                                    <select id="mata-pelajaran" name="id_kelas" class="select2 form-select shadow-none"
+                                        style="width: 100%; height:36px;"   style="text-transform: uppercase; font-weight: 700;">
+                                        <option selected value="">--- Pilih Kelas ---</option>
+                                        {% for data_kelas in data_kelas %}
+                                        <option value="{{data_kelas.id_kelas}}" style="text-transform: uppercase; font-weight: 700;">{{data_kelas.kelas}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-top">
+                        <div class="card-body">
+                            <button type="submit" class="btn btn-primary">Simpan Rombel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}

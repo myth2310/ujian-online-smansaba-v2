@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 15, 2024 at 02:27 AM
+-- Generation Time: Aug 23, 2024 at 01:24 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,20 @@ SET time_zone = "+00:00";
 --
 -- Database: `e-learning-smaba`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `data_rombel`
+--
+
+CREATE TABLE `data_rombel` (
+  `id_rombel` int(11) NOT NULL,
+  `id_user` int(10) NOT NULL,
+  `id_tahun_akademik` int(10) NOT NULL,
+  `id_kelas` int(10) DEFAULT NULL,
+  `id_mapel` int(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -123,6 +137,25 @@ CREATE TABLE `tahun_akademik` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `user`
+--
+
+CREATE TABLE `user` (
+  `id_user` int(11) NOT NULL,
+  `nama` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `level` varchar(10) NOT NULL,
+  `password` varchar(20) NOT NULL,
+  `status` varchar(10) NOT NULL,
+  `id_jurusan` int(100) DEFAULT NULL,
+  `orang_tua` varchar(100) DEFAULT NULL,
+  `email_orang_tua` varchar(100) DEFAULT NULL,
+  `alamat` varchar(300) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -151,6 +184,12 @@ INSERT INTO `users` (`id_user`, `id_mapel`, `id_jurusan`, `id_kelas`, `id_tahun_
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `data_rombel`
+--
+ALTER TABLE `data_rombel`
+  ADD PRIMARY KEY (`id_rombel`);
 
 --
 -- Indexes for table `hasil_ujian`
@@ -195,6 +234,12 @@ ALTER TABLE `tahun_akademik`
   ADD PRIMARY KEY (`akademik_id`);
 
 --
+-- Indexes for table `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`id_user`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -203,6 +248,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `data_rombel`
+--
+ALTER TABLE `data_rombel`
+  MODIFY `id_rombel` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `hasil_ujian`
@@ -245,6 +296,12 @@ ALTER TABLE `soal`
 --
 ALTER TABLE `tahun_akademik`
   MODIFY `akademik_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`

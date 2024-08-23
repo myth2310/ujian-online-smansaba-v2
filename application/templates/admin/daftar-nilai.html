@@ -26,7 +26,18 @@
                     <div class="card">
                         <div class="card-body">
                             <form id="filter-form" class="row g-3">
-                                <div class="col-md-5">
+                                <div class="col-md-2">
+                                    <label for="mapel" class="visually-hidden">TAHUN AKADEMIK</label>
+                                    <select id="mapel" class="form-select" name="id_user"
+                                        aria-label="Default select example"
+                                        style="text-transform: uppercase; font-weight: bold;">
+                                        <option selected disabled value="">PILIH TAHUN AKADEMIK</option>
+                                        <option style="text-transform: uppercase; font-weight: bold;"
+                                            value="{{akademik.akademik_id}}">{{akademik.tahun_akademik}} - {{akademik.semester}}</option>
+
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label for="mapel" class="visually-hidden">MATA PELAJARAN</label>
                                     <select id="mapel" class="form-select" name="id_user"
                                         aria-label="Default select example"
@@ -38,7 +49,7 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <label for="kelas" class="visually-hidden">KELAS</label>
                                     <select id="kelas" class="form-select" name="kelas"
                                         aria-label="Default select example"

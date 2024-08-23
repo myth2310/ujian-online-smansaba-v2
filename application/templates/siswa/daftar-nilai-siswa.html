@@ -26,6 +26,7 @@
                     <thead>
                         <tr>
                             <th>Jenis Ujian</th>
+                            <th>Waktu</th>
                             <th>Total Soal</th>
                             <th>Jumlah Banar</th>
                             <th>Nilai</th>
@@ -35,6 +36,9 @@
                         {% for data in data %}
                         <tr>
                             <td>{{data.kategori}}</td>
+                            <td>{{data.tanggal}} <br>
+                                {{data.time_start}} - {{data.time_done}}
+                            </td>
                             <td>{{data.total_soal}} Soal</td>
                             <td>{{data.jumlah_betul}}</td>
                             <td><span class="font-bold">{{data.hasil}}</span></td>

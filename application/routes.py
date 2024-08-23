@@ -10,7 +10,6 @@ import traceback
 from cryptography.fernet import Fernet
 import base64
 from io import BytesIO
-from apscheduler.schedulers.background import BackgroundScheduler
 
 app.secret_key = 'your_secret_key'
 
@@ -79,8 +78,11 @@ def daftarNilai():
         
         cursor.execute('SELECT * FROM kelas')
         kelas = cursor.fetchall()
+
+        cursor.execute('SELECT * FROM tahun_akademik WHERE status = "Aktif" ')
+        akademik = cursor.fetchone()
         
-        return render_template('admin/daftar-nilai.html', mapel=mapel, kelas=kelas)
+        return render_template('admin/daftar-nilai.html', mapel=mapel, kelas=kelas,akademik=akademik)
     else:
         return redirect(url_for('login'))
 
@@ -302,6 +304,133 @@ def formEditProfil(id_user):
         return render_template('formProfil.html',data=data)
     else:
         return redirect(url_for('login'))
+    
+@app.route('/form-tambah-siswa', methods=['GET'])
+def formTambahSiswa():
+    if 'islogin' in session:
+        conn = mysql.connection
+        curl = conn.cursor(dictionary=True)
+        curl.execute("SELECT * FROM jurusan")
+        jurusan = curl.fetchall()
+        return render_template('admin/form-tambah-siswa.html',jurusan=jurusan)
+    else:
+        return redirect(url_for('login'))
+    
+@app.route('/form-tambah-rombel', methods=['GET'])
+def formTambahRombel():
+    if 'islogin' in session:
+        conn = mysql.connection
+        curl = conn.cursor(dictionary=True)
+        curl.execute('SELECT * FROM user WHERE level = "Siswa" ')
+        data_siswa = curl.fetchall()
+        curl.execute('SELECT * FROM kelas')
+        data_kelas = curl.fetchall()
+        curl.execute('SELECT * FROM tahun_akademik')
+        tahun_akademik = curl.fetchall()
+
+        curl.execute('SELECT * FROM tahun_akademik WHERE status = "Aktif" ')
+        akademik = curl.fetchone()
+        return render_template('admin/form-tambah-rombel.html',data_kelas=data_kelas,tahun_akademik=tahun_akademik,data_siswa=data_siswa,akademik=akademik)
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/insert-rombel', methods=['POST'])
+def insert_rombel():
+    id_tahun_akademik = request.form['id_tahun_akademik']
+    id_user = request.form['id_user']  
+    id_kelas = request.form['id_kelas'] 
+
+    cursor = mysql.connection.cursor()
+    
+    # Check if the user already has data for the specified academic year
+    check_query = """
+        SELECT * FROM data_rombel
+        WHERE id_tahun_akademik = %s AND id_user = %s
+    """
+    cursor.execute(check_query, (id_tahun_akademik, id_user))
+    existing_record = cursor.fetchone()
+    
+    if existing_record:
+        # If a similar record exists, flash an alert message and redirect back
+        flash('User sudah memiliki data di tahun akademik ini!', 'warning')
+        return redirect(request.referrer)
+    else:
+        # If no duplicate found, insert the new record
+        insert_query = """
+            INSERT INTO data_rombel (id_tahun_akademik, id_user, id_kelas)
+            VALUES (%s, %s, %s)
+        """
+        cursor.execute(insert_query, (id_tahun_akademik, id_user, id_kelas))
+        mysql.connection.commit()
+        flash('Rombel berhasil ditambahkan!', 'success')
+    
+    cursor.close()
+    return redirect(url_for('dataRombel'))
+
+
+@app.route('/data-rombel')
+def dataRombel():
+    if 'islogin' in session:
+        conn = mysql.connection
+        curl = conn.cursor(dictionary=True)
+        curl.execute('SELECT * FROM kelas')
+        data_kelas = curl.fetchall()
+        curl.execute('SELECT * FROM tahun_akademik')
+        tahun_akademik = curl.fetchall()
+
+        return render_template('admin/daftar-siswa.html',data_kelas=data_kelas,tahun_akademik=tahun_akademik )
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/fetch_results_rombel', methods=['POST'])
+def fetch_results_rombel():
+    conn = mysql.connection
+    cursor = conn.cursor(dictionary=True)
+    
+    id_tahun_akademik = request.form.get('id_tahun_akademik')
+    id_kelas = request.form.get('kelas')
+
+    cursor.execute('''
+        SELECT user.*, kelas.kelas, jurusan.jurusan
+        FROM data_rombel
+        LEFT JOIN user ON data_rombel.id_user = user.id_user
+        LEFT JOIN kelas ON kelas.id_kelas = data_rombel.id_kelas
+        LEFT JOIN jurusan ON user.id_jurusan = jurusan.id_jurusan
+        WHERE user.level = 'Siswa' 
+        AND data_rombel.id_tahun_akademik = %s
+        AND data_rombel.id_kelas = %s 
+    ''', (id_tahun_akademik, id_kelas))
+    
+    results = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return jsonify(results)
+
+@app.route('/insert-siswa', methods=['POST'])
+def insert_user():
+    nama = request.form['nama']
+    email = request.form['email']
+    status = request.form['status']
+    level = request.form['level']
+    id_jurusan = request.form.get('id_jurusan') 
+    orang_tua = request.form['orang_tua']
+    email_orang_tua = request.form['email_orang_tua']
+    alamat = request.form['alamat']
+
+    current_year = datetime.now().year
+    password = f"#{nama[:4].lower()}{current_year}"
+
+    cursor = mysql.connection.cursor()
+    insert_query = """
+            INSERT INTO user (nama, email, password, status, level, id_jurusan, orang_tua, email_orang_tua, alamat)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+    cursor.execute(insert_query, (nama, email, password, status, level, id_jurusan, orang_tua, email_orang_tua, alamat))
+    mysql.connection.commit()
+    cursor.close()
+    flash('User berhasil ditambahkan dengan password otomatis!', 'success')
+    return redirect(url_for('dataRombel'))
 
 @app.route('/edit-profil/<int:id_user>', methods=['GET','POST'])
 def updateProfil(id_user):
@@ -700,7 +829,7 @@ def daftarUjian(id_mapel):
         curl = conn.cursor(dictionary=True)
         
         query = '''
-            SELECT hasil_ujian.*, kategori.kategori, mapel.mapel
+            SELECT hasil_ujian.*, kategori.kategori, mapel.mapel, kategori.tanggal, kategori.time_start,kategori.time_done
             FROM hasil_ujian 
             LEFT JOIN users ON hasil_ujian.id_user = users.id_user
             LEFT JOIN kategori ON hasil_ujian.id_kategori = kategori.id_kategori
@@ -709,10 +838,11 @@ def daftarUjian(id_mapel):
         '''
         
         curl.execute(query, (session['id_user'], id_mapel))
-        data = curl.fetchall()  # Fetch all rows once
+        data = curl.fetchall()  
+        print(data)
 
-        curl.close()  # Close the cursor
-        conn.close()  # Close the connection
+        curl.close()  
+        conn.close()  
         
         return render_template('siswa/daftar-nilai-siswa.html', data=data)
     else:
